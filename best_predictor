@@ -1,2 +1,91 @@
 #!/bin/bash
 
+#get country array 
+data=$(
+    awk -F"\t" '
+    {
+        if( $8 > 0 ){
+            homicide_xy[$1]+=$6*$8;
+            homicide_sumx[$1]+=$6;
+            homicide_sumx2[$1]+=$6*$6;
+
+            sumy2[$1]+=$8*$8;
+            sumy[$1]+=$8;
+
+            life_xy[$1]+=$7*$8;
+            life_sumx[$1]+=$7;
+            life_sumx2[$1]+=$7*$7;
+
+            gdp_xy[$1]+=$4*$8;
+            gdp_sumx[$1]+=$4;
+            gdp_sumx2[$1]+=$4*$4;
+
+            population_xy[$1]+=$5*$8;
+            population_sumx[$1]+=$5;
+            population_sumx2[$1]+=$5*$5;
+
+            count[$1]++;
+        }
+    }
+    END {
+        
+        for (i in count) {
+            if (count[i] > 3) {
+                # count correlation
+                if ((count[i] * homicide_sumx2[i] - homicide_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
+                    homicide_corr[i] = (count[i] * homicide_xy[i] - homicide_sumx[i] * sumy[i]) / sqrt((count[i] * homicide_sumx2[i] - homicide_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
+                }
+                if ((count[i] * life_sumx2[i] - life_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
+                    life_corr[i] = (count[i] * life_xy[i] - life_sumx[i] * sumy[i]) / sqrt((count[i] * life_sumx2[i] - life_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
+                }
+                if ((count[i] * gdp_sumx2[i] - gdp_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
+                    gdp_corr[i] = (count[i] * gdp_xy[i] - gdp_sumx[i] * sumy[i]) / sqrt((count[i] * gdp_sumx2[i] - gdp_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
+                }
+                if ((count[i] * population_sumx2[i] - population_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
+                    population_corr[i] = (count[i] * population_xy[i] - population_sumx[i] * sumy[i]) / sqrt((count[i] * population_sumx2[i] - population_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
+                }
+
+                homicide_corr_average += homicide_corr[i];
+                life_corr_average += life_corr[i];
+                gdp_corr_average += gdp_corr[i];
+                population_corr_average += population_corr[i];
+                count_average++;
+            }
+        }
+        # count average
+
+
+        homicide_corr_average/=count_average;
+        homicide_corr_average_abs= (homicide_corr_average>0)?homicide_corr_average:homicide_corr_average*-1
+        max=homicide_corr_average;
+        max_abs=homicide_corr_average_abs
+        max_name="Homicide Rate"
+        
+        life_corr_average/=count_average;
+        life_corr_average_abs= (life_corr_average>0)?life_corr_average:life_corr_average*-1
+        if (life_corr_average_abs>max_abs) max=life_corr_average;
+        max_name="Life Expectancy"
+
+        gdp_corr_average/=count_average;
+        gdp_corr_average_abs= (gdp_corr_average>0)?gdp_corr_average:gdp_corr_average*-1
+        if (gdp_corr_average_abs>max_abs) max=gdp_corr_average;
+        max_name="GDP"
+        
+        population_corr_average/=count_average;
+        population_corr_average_abs= (population_corr_average>0)?population_corr_average:population_corr_average*-1
+        if (population_corr_average_abs>max_abs) max=population_corr_average;
+        max_name="Population"
+
+        printf "Mean correlation of Homicide Rate with Cantril ladder is %.3f\n",homicide_corr_average;
+        printf "Mean correlation of GDP with Cantril ladder is  %.3f\n",gdp_corr_average;
+        printf "Mean correlation of Population with Cantril ladder is  %.3f\n" ,population_corr_average;
+        printf "Mean correlation of Life Expectancy with Cantril ladder is %.3f\n" ,life_corr_average;
+
+        printf "Most predictive mean correlation with the Cantril ladder is %s (r = %.3f)\n" ,max_name,max;
+      
+    }
+    ' $1
+)
+
+
+echo "$data" 

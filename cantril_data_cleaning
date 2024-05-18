@@ -118,4 +118,4 @@ NR==1{
 }
 ')
 
-echo "$data"
+echo "$data" > simple2.tsv
