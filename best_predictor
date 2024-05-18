@@ -63,17 +63,18 @@ data=$(
         
         life_corr_average/=count_average;
         life_corr_average_abs= (life_corr_average>0)?life_corr_average:life_corr_average*-1
-        if (life_corr_average_abs>max_abs) max=life_corr_average;
+        if (life_corr_average_abs>max_abs) {max=life_corr_average;max_abs=life_corr_average_abs}
         max_name="Life Expectancy"
 
         gdp_corr_average/=count_average;
         gdp_corr_average_abs= (gdp_corr_average>0)?gdp_corr_average:gdp_corr_average*-1
-        if (gdp_corr_average_abs>max_abs) max=gdp_corr_average;
+        if (gdp_corr_average_abs>max_abs) {max=gdp_corr_average;max_abs=gdp_corr_average_abs}
+
         max_name="GDP"
         
         population_corr_average/=count_average;
         population_corr_average_abs= (population_corr_average>0)?population_corr_average:population_corr_average*-1
-        if (population_corr_average_abs>max_abs) max=population_corr_average;
+        if (population_corr_average_abs>max_abs) {max=population_corr_average;max_abs=population_corr_average_abs}
         max_name="Population"
 
         printf "Mean correlation of Homicide Rate with Cantril ladder is %.3f\n",homicide_corr_average;
