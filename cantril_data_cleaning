@@ -116,6 +116,7 @@ rm sort_file1.tsv sort_file2.tsv sort_file3.tsv
     tail -n +2 data.tsv | awk -F ',' 'NR > 1 {print $0}' | sort -t ',' -k1,1 -k3,3
 } > sorted_data.tsv
 
+rm data.tsv
 
 #Remove the column with header Continent, which is sparsely populated and is not present in one of the files.
 data=$(gawk -F '\t' '
@@ -135,6 +136,8 @@ NR==1{
 		printf "%s%s", $arr[k], (k==j?"\n":"\t")
 	}
 }' sorted_data.tsv)
+
+rm sorted_data.tsv
 
 #Ignore the rows that do not represent countries (the country code field is empty)
 data=$(echo "$data"| gawk -F"\t" '
@@ -203,4 +206,4 @@ NR==1{
 }
 ')
 
-echo "$data" > simple2.tsv
+echo "$data" 
