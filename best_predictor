@@ -1,10 +1,12 @@
 #!/bin/bash
 
-#get country array 
+#get country array
 data=$(
     awk -F"\t" '
     {
-        if( $8 > 0 ){
+        if($8 > 0){
+            # read each line and prepare the parameters used to calculate Pearson correlation 
+
             homicide_xy[$1]+=$6*$8;
             homicide_sumx[$1]+=$6;
             homicide_sumx2[$1]+=$6*$6;
@@ -28,7 +30,7 @@ data=$(
         }
     }
     END {
-        
+
         for (i in count) {
             if (count[i] > 3) {
                 # count correlation
