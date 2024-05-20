@@ -6,15 +6,23 @@ data=$(
     NR != 1 {
         if($8 >= 0){
             # read each line and prepare the parameters used to calculate Pearson correlation 
+            
+            # prepare each parameters to calculate correlation
             if($6 >=0){
+                #count how many record the country has; then next step we can find country has at least three pear values
                 homicide_count[$1]++
+                
+                # homicide means we are calculate parameters for correlation of homicide and Cantril-value
+                # x means homicide 
+                # y means Cantril-value
+                # xy means x*y
+                # same below 
                 homicide_xy[$1]+=$6*$8;
                 homicide_sumx[$1]+=$6;
                 homicide_sumx2[$1]+=$6*$6;
                 homicide_sumy2[$1]+=$8*$8;
                 homicide_sumy[$1]+=$8;
             }
-
 
 
             if($7 >=0){
@@ -24,8 +32,6 @@ data=$(
                 life_sumx2[$1]+=$7*$7;
                 life_sumy[$1]+=$8;
                 life_sumy2[$1]+=$8*$8;
-
-
             }
 
             if($4 >=0){
@@ -48,14 +54,19 @@ data=$(
         }
     }
     END {
-
-
         for (country in homicide_count){
             if (homicide_count[country]>=3){
+                
+                # calculate correlation of homicide and Cantril-value
+
                 numerator= (homicide_count[country] * homicide_xy[country] - homicide_sumx[country] * homicide_sumy[country]) 
                 denominator =  sqrt((homicide_count[country] * homicide_sumx2[country] - homicide_sumx[country]*homicide_sumx[country]) * (homicide_count[country] * homicide_sumy2[country] - homicide_sumy[country]*homicide_sumy[country]))
                 if (denominator != 0) {
                     homicide_corr[country] = numerator/ denominator;
+                    # calculate sum of all homicide 
+                    # calculate count of all homicide
+                    # then next step can calculate average value
+
                     homicide_corr_average += homicide_corr[country];
                     homicide_count_average++
                 }
@@ -98,7 +109,7 @@ data=$(
             }
         }
                 
-        # count average
+        # calcuate average after loop
         homicide_corr_average/=homicide_count_average;
         homicide_corr_average_abs= (homicide_corr_average>0)?homicide_corr_average:homicide_corr_average*-1
         max=homicide_corr_average;
@@ -106,28 +117,24 @@ data=$(
         max_name="Homicide Rate"
         
         life_corr_average/=life_count_average;
+        # calculate abs of number to compare 
         life_corr_average_abs= (life_corr_average>0)?life_corr_average:life_corr_average*-1
-        if (life_corr_average_abs>max_abs) {max=life_corr_average;max_abs=life_corr_average_abs}
-        max_name="Life Expectancy"
+        # if we find a new max number, we need to save raw max number and also save the abs max number for the next comparetion.
+        if (life_corr_average_abs>max_abs) {max=life_corr_average;max_abs=life_corr_average_abs;max_name="Life Expectancy"}
 
         gdp_corr_average/=gdp_count_average;
         gdp_corr_average_abs= (gdp_corr_average>0)?gdp_corr_average:gdp_corr_average*-1
-        if (gdp_corr_average_abs>max_abs) {max=gdp_corr_average;max_abs=gdp_corr_average_abs}
-
-        max_name="GDP"
+        if (gdp_corr_average_abs>max_abs) {max=gdp_corr_average;max_abs=gdp_corr_average_abs;max_name="GDP"}
         
         population_corr_average/=population_count_average;
         population_corr_average_abs= (population_corr_average>0)?population_corr_average:population_corr_average*-1
-        if (population_corr_average_abs>max_abs) {max=population_corr_average;max_abs=population_corr_average_abs}
-        max_name="Population"
+        if (population_corr_average_abs>max_abs) {max=population_corr_average;max_abs=population_corr_average_abs;max_name="Population"}
 
         printf "Mean correlation of Homicide Rate with Cantril ladder is %.3f\n",homicide_corr_average;
         printf "Mean correlation of GDP with Cantril ladder is  %.3f\n",gdp_corr_average;
         printf "Mean correlation of Population with Cantril ladder is  %.3f\n" ,population_corr_average;
         printf "Mean correlation of Life Expectancy with Cantril ladder is %.3f\n" ,life_corr_average;
-
         printf "Most predictive mean correlation with the Cantril ladder is %s (r = %.3f)\n" ,max_name,max;
-      
     }
     ' $1
 ) 

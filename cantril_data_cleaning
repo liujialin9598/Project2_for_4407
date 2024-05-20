@@ -14,12 +14,13 @@ do
 
     if [[ $? -ne 0 ]]
     then
-        echo "$file not tab"
+        echo "$file not tab" >&2
         exit 1
     fi
 	#Also based on the header line, report any lines that do not have the same number of cells. (Cells are allowed be empty.)
 	head_cells_number=$(head -n1 $file | gawk -F'\t' '{print NF}')
-	tail -n +2 $file | gawk -F '\t' -v hcelnum=$head_cells_number ' NF != hcelnum {print "'"$file"' : line",NR+1,"has different number of cells"}'
+	tail -n +2 $file | gawk -F '\t' -v hcelnum=$head_cells_number ' NF != hcelnum {print "'"$file"' : line",NR+1,"has different number of cells"}' >&2
+
 done
 
 # sort files 
@@ -35,7 +36,7 @@ sort_file $3 > sort_file3.tsv
 # data=$(gawk 'BEGIN{FS=OFS="\t"} NR==FNR{arr[$1,$3]=$0; next} {print $0, arr[$1,$3]}' "sort_file1.tsv" "sort_file2.tsv" |\
 # gawk ' NR==FNR{arr[$1,$3]=$0; next} {print $0, arr[$1,$3]}' "sort_file3.tsv" - )
 
-gawk '
+data=$(gawk '
 BEGIN {
     FS = OFS = "\t"
 }
@@ -101,25 +102,14 @@ END {
 			print ""
     }
 }
-' sort_file1.tsv sort_file2.tsv sort_file3.tsv > data.tsv
+' sort_file1.tsv sort_file2.tsv sort_file3.tsv )
 
 
 rm sort_file1.tsv sort_file2.tsv sort_file3.tsv
 
-#sort data 
-# echo "$data" | awk -F "\t" '{print $0}' > data.tsv
-{ 
-	# Keep the first line of the file, unsorted
-    head -n 1 data.tsv
-
-	# Sort the contents of the second line of the file and beyond
-    tail -n +2 data.tsv | awk -F ',' 'NR > 1 {print $0}' | sort -t ',' -k1,1 -k3,3
-} > sorted_data.tsv
-
-rm data.tsv
 
 #Remove the column with header Continent, which is sparsely populated and is not present in one of the files.
-data=$(gawk -F '\t' '
+data=$(echo "$data" |gawk -F '\t' '
 NR==1{
 	for(i=1;i<=NF;i++)
 	{
@@ -135,9 +125,9 @@ NR==1{
 	for (k=1;k<=j;k++){
 		printf "%s%s", $arr[k], (k==j?"\n":"\t")
 	}
-}' sorted_data.tsv)
+}')
 
-rm sorted_data.tsv
+
 
 #Ignore the rows that do not represent countries (the country code field is empty)
 data=$(echo "$data"| gawk -F"\t" '
@@ -166,15 +156,7 @@ NR==1{
 $yearId>=2011&&$yearId<=2021
 ')
 
-#sort data
-data=$(echo "$data" | gawk -F"\t" '
-NR==1{	
-	print ; next
-}
-{
-	print $0 | "sort -k1,1 -k3,3"
-}
-')
+
 
 
 # output 
@@ -206,4 +188,10 @@ NR==1{
 }
 ')
 
-echo "$data" 
+#sort data
+
+
+
+data=$(head -n 1 <(echo "$data") && tail -n +2 <(echo "$data")|sort -t $'\t' -k2,2 -k3,3)
+
+echo "$data"
