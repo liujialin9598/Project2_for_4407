@@ -33,15 +33,15 @@ sort_file $2 > sort_file2.tsv
 sort_file $3 > sort_file3.tsv
 
 #merge files: save row in one file (without country, year) in array[countryindex,yearindex], then print (add) this row in the file2 with same country same year
-# data=$(gawk 'BEGIN{FS=OFS="\t"} NR==FNR{arr[$1,$3]=$0; next} {print $0, arr[$1,$3]}' "sort_file1.tsv" "sort_file2.tsv" |\
-# gawk ' NR==FNR{arr[$1,$3]=$0; next} {print $0, arr[$1,$3]}' "sort_file3.tsv" - )
-
 data=$(gawk '
 BEGIN {
     FS = OFS = "\t"
 }
 {
+	# for every file save all the row in to array[key], key= "coutry,year"
     if (FILENAME == ARGV[1]) {
+		# for row 1, save the col1. and also next step we need to prepare an empty row
+		# in case we print empty row and destroy sheet
 		if(NR ==1 ){
 			col1 = $0
 			empty_row1 = ""
@@ -159,7 +159,9 @@ $yearId>=2011&&$yearId<=2021
 
 
 
-# output 
+# set output format 
+# <Entity/Country> <Code> <Year> <GDP per capita> \
+# <Population> <Homicide Rate> <Life Expectancy> <Cantril Ladder score>
 data=$(echo "$data"| gawk -F"\t" '
 NR==1{
 	for(i=1; i<=NF;i++)
@@ -189,9 +191,8 @@ NR==1{
 ')
 
 #sort data
-
-
-
 data=$(head -n 1 <(echo "$data") && tail -n +2 <(echo "$data")|sort -t $'\t' -k2,2 -k3,3)
+
+data=$( echo "$data" | sed '1s/.*/Entity\/Country\tCode\tYear\tGDP per capita\tPopulation\tHomicide Rate\tLife Expectancy\tCantril Ladder score/' )
 
 echo "$data"

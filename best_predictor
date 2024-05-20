@@ -110,23 +110,25 @@ data=$(
         }
                 
         # calcuate average after loop
-        homicide_corr_average/=homicide_count_average;
+        if(homicide_count_average){homicide_corr_average/=homicide_count_average;}
         homicide_corr_average_abs= (homicide_corr_average>0)?homicide_corr_average:homicide_corr_average*-1
         max=homicide_corr_average;
         max_abs=homicide_corr_average_abs
         max_name="Homicide Rate"
         
-        life_corr_average/=life_count_average;
+
+        if(life_count_average){life_corr_average/=life_count_average;}
         # calculate abs of number to compare 
         life_corr_average_abs= (life_corr_average>0)?life_corr_average:life_corr_average*-1
         # if we find a new max number, we need to save raw max number and also save the abs max number for the next comparetion.
         if (life_corr_average_abs>max_abs) {max=life_corr_average;max_abs=life_corr_average_abs;max_name="Life Expectancy"}
 
-        gdp_corr_average/=gdp_count_average;
+
+        if(gdp_count_average){gdp_corr_average/=gdp_count_average;}
         gdp_corr_average_abs= (gdp_corr_average>0)?gdp_corr_average:gdp_corr_average*-1
         if (gdp_corr_average_abs>max_abs) {max=gdp_corr_average;max_abs=gdp_corr_average_abs;max_name="GDP"}
         
-        population_corr_average/=population_count_average;
+        if(population_count_average){population_corr_average/=population_count_average;}
         population_corr_average_abs= (population_corr_average>0)?population_corr_average:population_corr_average*-1
         if (population_corr_average_abs>max_abs) {max=population_corr_average;max_abs=population_corr_average_abs;max_name="Population"}
 
