@@ -3,78 +3,120 @@
 #get country array
 data=$(
     awk -F"\t" '
-    {
-        if($8 > 0){
+    NR != 1 {
+        if($8 >= 0){
             # read each line and prepare the parameters used to calculate Pearson correlation 
+            if($6 >=0){
+                homicide_count[$1]++
+                homicide_xy[$1]+=$6*$8;
+                homicide_sumx[$1]+=$6;
+                homicide_sumx2[$1]+=$6*$6;
+                homicide_sumy2[$1]+=$8*$8;
+                homicide_sumy[$1]+=$8;
+            }
 
-            homicide_xy[$1]+=$6*$8;
-            homicide_sumx[$1]+=$6;
-            homicide_sumx2[$1]+=$6*$6;
 
-            sumy2[$1]+=$8*$8;
-            sumy[$1]+=$8;
 
-            life_xy[$1]+=$7*$8;
-            life_sumx[$1]+=$7;
-            life_sumx2[$1]+=$7*$7;
+            if($7 >=0){
+                life_count[$1]++
+                life_xy[$1]+=$7*$8;
+                life_sumx[$1]+=$7;
+                life_sumx2[$1]+=$7*$7;
+                life_sumy[$1]+=$8;
+                life_sumy2[$1]+=$8*$8;
 
-            gdp_xy[$1]+=$4*$8;
-            gdp_sumx[$1]+=$4;
-            gdp_sumx2[$1]+=$4*$4;
 
-            population_xy[$1]+=$5*$8;
-            population_sumx[$1]+=$5;
-            population_sumx2[$1]+=$5*$5;
+            }
 
-            count[$1]++;
+            if($4 >=0){
+                gdp_count[$1]++
+                gdp_xy[$1]+=$4*$8;
+                gdp_sumx[$1]+=$4;
+                gdp_sumx2[$1]+=$4*$4;
+                gdp_sumy2[$1]+=$8*$8;
+                gdp_sumy[$1]+=$8;
+            }
+
+            if($5 >=0){
+                population_count[$1]++
+                population_xy[$1]+=$5*$8;
+                population_sumx[$1]+=$5;
+                population_sumx2[$1]+=$5*$5;
+                population_sumy2[$1]+=$8*$8;
+                population_sumy[$1]+=$8;
+            }
         }
     }
     END {
 
-        for (i in count) {
-            if (count[i] > 3) {
-                # count correlation
-                if ((count[i] * homicide_sumx2[i] - homicide_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
-                    homicide_corr[i] = (count[i] * homicide_xy[i] - homicide_sumx[i] * sumy[i]) / sqrt((count[i] * homicide_sumx2[i] - homicide_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
-                }
-                if ((count[i] * life_sumx2[i] - life_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
-                    life_corr[i] = (count[i] * life_xy[i] - life_sumx[i] * sumy[i]) / sqrt((count[i] * life_sumx2[i] - life_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
-                }
-                if ((count[i] * gdp_sumx2[i] - gdp_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
-                    gdp_corr[i] = (count[i] * gdp_xy[i] - gdp_sumx[i] * sumy[i]) / sqrt((count[i] * gdp_sumx2[i] - gdp_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
-                }
-                if ((count[i] * population_sumx2[i] - population_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2) != 0) {
-                    population_corr[i] = (count[i] * population_xy[i] - population_sumx[i] * sumy[i]) / sqrt((count[i] * population_sumx2[i] - population_sumx[i]^2) * (count[i] * sumy2[i] - sumy[i]^2));
-                }
 
-                homicide_corr_average += homicide_corr[i];
-                life_corr_average += life_corr[i];
-                gdp_corr_average += gdp_corr[i];
-                population_corr_average += population_corr[i];
-                count_average++;
+        for (country in homicide_count){
+            if (homicide_count[country]>=3){
+                numerator= (homicide_count[country] * homicide_xy[country] - homicide_sumx[country] * homicide_sumy[country]) 
+                denominator =  sqrt((homicide_count[country] * homicide_sumx2[country] - homicide_sumx[country]*homicide_sumx[country]) * (homicide_count[country] * homicide_sumy2[country] - homicide_sumy[country]*homicide_sumy[country]))
+                if (denominator != 0) {
+                    homicide_corr[country] = numerator/ denominator;
+                    homicide_corr_average += homicide_corr[country];
+                    homicide_count_average++
+                }
             }
         }
+
+        for (country in life_count){
+            if (life_count[country]>=3){
+                numerator = (life_count[country] * life_xy[country] - life_sumx[country] * life_sumy[country]) 
+                denominator = sqrt((life_count[country] * life_sumx2[country] - life_sumx[country]*life_sumx[country]) * (life_count[country] * life_sumy2[country] - life_sumy[country]*life_sumy[country]))
+                if (denominator != 0) {
+                    life_corr[country] = numerator/ denominator;
+                    life_corr_average += life_corr[country];
+                    life_count_average++;
+                }
+            }
+        }
+
+        for (country in gdp_count){
+            if (gdp_count[country]>=3){
+                numerator = (gdp_count[country] * gdp_xy[country] - gdp_sumx[country] * gdp_sumy[country]) 
+                denominator = sqrt((gdp_count[country] * gdp_sumx2[country] - gdp_sumx[country]*gdp_sumx[country]) * (gdp_count[country] * gdp_sumy2[country] - gdp_sumy[country]*gdp_sumy[country]));
+                if (denominator != 0) {
+                    gdp_corr[country] = numerator/ denominator
+                    gdp_corr_average += gdp_corr[country];
+                    gdp_count_average++;
+                }
+            }
+        }
+
+        for (country in population_count){
+            if (population_count[country]>=3){
+                numerator = (population_count[country] * population_xy[country] - population_sumx[country] * population_sumy[country])
+                denominator =  sqrt((population_count[country] * population_sumx2[country] - population_sumx[country]*population_sumx[country]) * (population_count[country] * population_sumy2[country] - population_sumy[country]*population_sumy[country]));
+                if (denominator != 0) {
+                    population_corr[country] =  numerator / denominator
+                    population_corr_average += population_corr[country];
+                    population_count_average++;
+                }
+            }
+        }
+                
         # count average
-
-
-        homicide_corr_average/=count_average;
+        homicide_corr_average/=homicide_count_average;
         homicide_corr_average_abs= (homicide_corr_average>0)?homicide_corr_average:homicide_corr_average*-1
         max=homicide_corr_average;
         max_abs=homicide_corr_average_abs
         max_name="Homicide Rate"
         
-        life_corr_average/=count_average;
+        life_corr_average/=life_count_average;
         life_corr_average_abs= (life_corr_average>0)?life_corr_average:life_corr_average*-1
         if (life_corr_average_abs>max_abs) {max=life_corr_average;max_abs=life_corr_average_abs}
         max_name="Life Expectancy"
 
-        gdp_corr_average/=count_average;
+        gdp_corr_average/=gdp_count_average;
         gdp_corr_average_abs= (gdp_corr_average>0)?gdp_corr_average:gdp_corr_average*-1
         if (gdp_corr_average_abs>max_abs) {max=gdp_corr_average;max_abs=gdp_corr_average_abs}
 
         max_name="GDP"
         
-        population_corr_average/=count_average;
+        population_corr_average/=population_count_average;
         population_corr_average_abs= (population_corr_average>0)?population_corr_average:population_corr_average*-1
         if (population_corr_average_abs>max_abs) {max=population_corr_average;max_abs=population_corr_average_abs}
         max_name="Population"
@@ -88,7 +130,7 @@ data=$(
       
     }
     ' $1
-)
+) 
 
 
 echo "$data" 
