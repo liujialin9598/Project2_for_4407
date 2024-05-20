@@ -1,5 +1,0 @@
-Mean correlation of Homicide Rate with Cantril ladder is -0.084
-Mean correlation of GDP with Cantril ladder is  0.236
-Mean correlation of Population with Cantril ladder is  -0.031
-Mean correlation of Life Expectancy with Cantril ladder is 0.012
-Most predictive mean correlation with the Cantril ladder is Population (r = 0.236)
